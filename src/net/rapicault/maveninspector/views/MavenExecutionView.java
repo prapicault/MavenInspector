@@ -161,6 +161,8 @@ public class MavenExecutionView extends ViewPart {
 	@Override
 	public void dispose() {
 		getViewSite().getPage().removePartListener(editorListener);
+		viewer.getControl().dispose();
+		viewer = null;
 	}
 
 	private Table createTable(Composite parent) {
@@ -223,6 +225,5 @@ public class MavenExecutionView extends ViewPart {
 		};
 		openSupportAction.setText("Contribution");
 		openSupportAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_HOME_NAV));
-		
 	}
 }
