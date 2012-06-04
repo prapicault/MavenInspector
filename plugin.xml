@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="Maven execution"
+            icon="icons/pom_obj.gif"
+            category="org.eclipse.m2e.core.views.repositories"
+            class="net.rapicault.maveninspector.views.MavenExecutionView"
+            id="net.rapicault.maveninspector.views.MavenExecution">
+      </view>
+   </extension>
+
+</plugin>
