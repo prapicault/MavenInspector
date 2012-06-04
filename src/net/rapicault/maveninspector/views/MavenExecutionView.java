@@ -134,7 +134,7 @@ public class MavenExecutionView extends ViewPart {
 			public void mavenProjectChanged(MavenProjectChangedEvent[] events, IProgressMonitor monitor) {
 				for (int i = 0; i < events.length; i++) {
 					if (events[i].getMavenProject() != null)
-						if (projectShown.equals(events[i].getMavenProject().getProject()))
+						if (events[i].getMavenProject().getProject().equals(projectShown))
 							Display.getDefault().asyncExec(new Runnable() {
 								@Override
 								public void run() {
