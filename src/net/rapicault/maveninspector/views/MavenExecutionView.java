@@ -10,9 +10,15 @@
  *******************************************************************************/
 package net.rapicault.maveninspector.views;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
@@ -23,25 +29,33 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener2;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 public class MavenExecutionView extends ViewPart {
 
 	private static final String POM_EDITOR_ID = "org.eclipse.m2e.editor.MavenPomEditor";
 	private TableViewer viewer;
+	private Action openLifecyclePageAction;
 	private IProject projectShown;
 	private IPartListener2 editorListener;
 	private IMavenProjectChangedListener mavenListener;
+	private Action openSupportAction;
 
 	@Override
 	public void createPartControl(Composite parent) {
 		viewer = new TableViewer(createTable(parent));
 		viewer.setContentProvider(new MojoContentProvider());
 		viewer.setLabelProvider(new MojoLabelProvider());
-
+		makeActions();
+		contributeToActionBars();
+		
 		IEditorPart editor = getViewSite().getPage().getActiveEditor();
 		if (editor != null) {
 			if (POM_EDITOR_ID.equals(editor.getEditorSite().getId()))
@@ -161,5 +175,54 @@ public class MavenExecutionView extends ViewPart {
 			column.setWidth(columnDescriptor.getWidth());
 		}
 		return table;
+	}
+	
+	private void contributeToActionBars() {
+		IActionBars bars = getViewSite().getActionBars();
+		fillLocalPullDown(bars.getMenuManager());
+	}
+
+	private void fillLocalPullDown(IMenuManager menuManager) {
+		menuManager.add(openLifecyclePageAction);
+		menuManager.add(openSupportAction);
+	}
+	
+	private void makeActions() {
+		
+		openLifecyclePageAction = new Action() {
+			public void run() {
+				try {
+					PlatformUI.getWorkbench().getBrowserSupport().createBrowser("lifecycle").openURL(new URL("http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference"));
+				} catch (PartInitException e) {
+					MessageDialog.openError(
+							viewer.getControl().getShell(),
+							"Error opening page",
+							"Problem opening the page: http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference");
+				} catch (MalformedURLException e) {
+					//Can't happen the URL is correct
+				}
+			}
+		};
+		openLifecyclePageAction.setText("Maven lifecycle");
+		openLifecyclePageAction.setToolTipText("Maven lifecycle documentation");
+		openLifecyclePageAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+		
+		openSupportAction = new Action() {
+			public void run() {
+				try {
+					PlatformUI.getWorkbench().getBrowserSupport().createBrowser("Contribution").openURL(new URL("https://github.com/prapicau/MavenInspector"));
+				} catch (PartInitException e) {
+					MessageDialog.openError(
+							viewer.getControl().getShell(),
+							"Error opening page",
+							"An error occurred trying to open the page: https://github.com/prapicau/MavenInspector");
+				} catch (MalformedURLException e) {
+					//Can't happen the URL is correct
+				}
+			}
+		};
+		openSupportAction.setText("Contribution");
+		openSupportAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_HOME_NAV));
+		
 	}
 }
