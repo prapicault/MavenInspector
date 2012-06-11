@@ -18,8 +18,11 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
@@ -42,6 +45,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class MavenExecutionView extends ViewPart {
 
@@ -52,11 +56,14 @@ public class MavenExecutionView extends ViewPart {
 	private IPartListener2 editorListener;
 	private IMavenProjectChangedListener mavenListener;
 	private Action openSupportAction;
+	private Action pinContent;
 
 	private StackLayout layout;
 	private Composite tablePage;
 	private Composite notMavenPage;
 	private Composite contentPanel;
+
+	private boolean contentIsPinned;
 	
 	@Override
 	public void createPartControl(Composite shell) {
@@ -102,6 +109,8 @@ public class MavenExecutionView extends ViewPart {
 			}
 
 			private void fillView(IWorkbenchPartReference partRef) {
+				if (contentIsPinned)
+					return;
 				if (POM_EDITOR_ID.equals(partRef.getId())) {
 					setViewerInput();
 					// System.err.println(new Throwable().getStackTrace()[1]);
@@ -109,6 +118,8 @@ public class MavenExecutionView extends ViewPart {
 			}
 
 			private void clearView(IWorkbenchPartReference partRef) {
+				if (contentIsPinned)
+					return;
 				if (POM_EDITOR_ID.equals(partRef.getId())) {
 					emptyViewer();
 					// System.err.println(new Throwable().getStackTrace()[1]);
@@ -151,11 +162,13 @@ public class MavenExecutionView extends ViewPart {
 
 	private void showTable() {
 		 layout.topControl = tablePage;
+		 pinContent.setEnabled(true);
 		 contentPanel.layout();
 	}
 
 	private void showMessagePanel() {
 		 layout.topControl = notMavenPage;
+		 pinContent.setEnabled(false);
 		contentPanel.layout();
 	}
 
@@ -229,6 +242,11 @@ public class MavenExecutionView extends ViewPart {
 	private void contributeToActionBars() {
 		IActionBars bars = getViewSite().getActionBars();
 		fillLocalPullDown(bars.getMenuManager());
+		fillToolBar(bars.getToolBarManager());
+	}
+
+	private void fillToolBar(IToolBarManager toolBarManager) {
+		toolBarManager.add(pinContent);
 	}
 
 	private void fillLocalPullDown(IMenuManager menuManager) {
@@ -265,5 +283,23 @@ public class MavenExecutionView extends ViewPart {
 		};
 		openSupportAction.setText("Contribution");
 		openSupportAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_HOME_NAV));
+		
+		pinContent = new Action("Pin", IAction.AS_CHECK_BOX) {
+			@Override
+			public String getToolTipText() {
+				return "Pin content of the view to current editor";
+			}
+			
+			@Override
+			public ImageDescriptor getImageDescriptor() {
+				return AbstractUIPlugin.imageDescriptorFromPlugin("net.rapicault.mavenInspector", "icons/pin_view.gif");
+			}
+			
+			@Override
+			public void run() {
+				contentIsPinned = !contentIsPinned;
+				setChecked(contentIsPinned);
+			}
+		};
 	}
 }
