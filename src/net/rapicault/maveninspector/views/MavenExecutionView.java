@@ -15,6 +15,7 @@ import java.net.URL;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
@@ -24,9 +25,13 @@ import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IActionBars;
@@ -48,14 +53,36 @@ public class MavenExecutionView extends ViewPart {
 	private IMavenProjectChangedListener mavenListener;
 	private Action openSupportAction;
 
+	private StackLayout layout;
+	private Composite tablePage;
+	private Composite notMavenPage;
+	private Composite contentPanel;
+	
 	@Override
-	public void createPartControl(Composite parent) {
-		viewer = new TableViewer(createTable(parent));
+	public void createPartControl(Composite shell) {
+		// create the composite that the pages will share
+		contentPanel = new Composite(shell, SWT.NONE);
+		layout = new StackLayout();
+		contentPanel.setLayout(layout);
+
+		// create the first page's content
+		tablePage = new Composite(contentPanel, SWT.NONE);
+		tablePage.setLayout(new FillLayout());
+		viewer = new TableViewer(createTable(tablePage));
 		viewer.setContentProvider(new MojoContentProvider());
 		viewer.setLabelProvider(new MojoLabelProvider());
 		makeActions();
 		contributeToActionBars();
-		
+
+		// create the second page's content
+		notMavenPage = new Composite(contentPanel, SWT.NONE);
+		notMavenPage.setLayout(new RowLayout());
+		Label text = new Label(notMavenPage, SWT.FULL_SELECTION);
+		text.setText("This pom does not belong to a maven project. To turn the project into a maven project: Right click on the project > Configure > Convert to Maven Project.");
+
+		// By default show the table
+		showTable();
+
 		IEditorPart editor = getViewSite().getPage().getActiveEditor();
 		if (editor != null) {
 			if (POM_EDITOR_ID.equals(editor.getEditorSite().getId()))
@@ -122,11 +149,32 @@ public class MavenExecutionView extends ViewPart {
 		getViewSite().getPage().addPartListener(editorListener);
 	}
 
+	private void showTable() {
+		 layout.topControl = tablePage;
+		 contentPanel.layout();
+	}
+
+	private void showMessagePanel() {
+		 layout.topControl = notMavenPage;
+		contentPanel.layout();
+	}
+
 	private void setViewerInput() {
 		final IProject newProject = ((IResource) getViewSite().getPage().getActiveEditor().getEditorInput().getAdapter(IResource.class)).getProject();
 		if (projectShown != null && projectShown.equals(newProject))
 			return;
 
+		try {
+			if (newProject.getNature("org.eclipse.m2e.core.maven2Nature") == null) {
+				showMessagePanel();
+				return;
+			}
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		showTable();
 		projectShown = newProject;
 		viewer.setInput(projectShown);
 
@@ -161,8 +209,7 @@ public class MavenExecutionView extends ViewPart {
 	@Override
 	public void dispose() {
 		getViewSite().getPage().removePartListener(editorListener);
-		viewer.getControl().dispose();
-		viewer = null;
+		contentPanel.dispose();
 	}
 
 	private Table createTable(Composite parent) {
@@ -178,7 +225,7 @@ public class MavenExecutionView extends ViewPart {
 		}
 		return table;
 	}
-	
+
 	private void contributeToActionBars() {
 		IActionBars bars = getViewSite().getActionBars();
 		fillLocalPullDown(bars.getMenuManager());
@@ -188,38 +235,31 @@ public class MavenExecutionView extends ViewPart {
 		menuManager.add(openLifecyclePageAction);
 		menuManager.add(openSupportAction);
 	}
-	
+
 	private void makeActions() {
-		
 		openLifecyclePageAction = new Action() {
 			public void run() {
 				try {
 					PlatformUI.getWorkbench().getBrowserSupport().createBrowser("lifecycle").openURL(new URL("http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference"));
 				} catch (PartInitException e) {
-					MessageDialog.openError(
-							viewer.getControl().getShell(),
-							"Error opening page",
-							"Problem opening the page: http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference");
+					MessageDialog.openError(viewer.getControl().getShell(), "Error opening page", "Problem opening the page: http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference");
 				} catch (MalformedURLException e) {
-					//Can't happen the URL is correct
+					// Can't happen the URL is correct
 				}
 			}
 		};
 		openLifecyclePageAction.setText("Maven lifecycle");
 		openLifecyclePageAction.setToolTipText("Maven lifecycle documentation");
 		openLifecyclePageAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-		
+
 		openSupportAction = new Action() {
 			public void run() {
 				try {
 					PlatformUI.getWorkbench().getBrowserSupport().createBrowser("Contribution").openURL(new URL("https://github.com/prapicau/MavenInspector"));
 				} catch (PartInitException e) {
-					MessageDialog.openError(
-							viewer.getControl().getShell(),
-							"Error opening page",
-							"An error occurred trying to open the page: https://github.com/prapicau/MavenInspector");
+					MessageDialog.openError(viewer.getControl().getShell(), "Error opening page", "An error occurred trying to open the page: https://github.com/prapicau/MavenInspector");
 				} catch (MalformedURLException e) {
-					//Can't happen the URL is correct
+					// Can't happen the URL is correct
 				}
 			}
 		};

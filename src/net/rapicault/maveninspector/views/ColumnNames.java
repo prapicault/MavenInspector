@@ -11,7 +11,7 @@
 package net.rapicault.maveninspector.views;
 
 public enum ColumnNames {
-	PHASE("Phase", 125), PLUGIN("Plugin", 280), GOAL("Goal", 150);
+	PHASE("Phase", 125), PLUGIN("Plugin", 280), GOAL("Goal", 150), EXECUTION_ID("Execution id", 150);
 	
 	private String name;
 	private int width;
