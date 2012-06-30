@@ -107,16 +107,7 @@ public class MavenExecutionView extends ViewPart {
 				fillView(partRef);
 
 			}
-
-			private void fillView(IWorkbenchPartReference partRef) {
-				if (contentIsPinned)
-					return;
-				if (POM_EDITOR_ID.equals(partRef.getId())) {
-					setViewerInput();
-					// System.err.println(new Throwable().getStackTrace()[1]);
-				}
-			}
-
+			
 			private void clearView(IWorkbenchPartReference partRef) {
 				if (contentIsPinned)
 					return;
@@ -208,6 +199,17 @@ public class MavenExecutionView extends ViewPart {
 		MavenPlugin.getMavenProjectRegistry().addMavenProjectChangedListener(mavenListener);
 	}
 
+	private void fillView(IWorkbenchPartReference partRef) {
+		if (partRef == null)
+			return;
+		if (contentIsPinned)
+			return;
+		if (POM_EDITOR_ID.equals(partRef.getId())) {
+			setViewerInput();
+			// System.err.println(new Throwable().getStackTrace()[1]);
+		}
+	}
+	
 	private void emptyViewer() {
 		projectShown = null;
 		MavenPlugin.getMavenProjectRegistry().removeMavenProjectChangedListener(mavenListener);
@@ -241,6 +243,7 @@ public class MavenExecutionView extends ViewPart {
 
 	private void contributeToActionBars() {
 		IActionBars bars = getViewSite().getActionBars();
+//		bars.setGlobalActionHandler(actionId, handler)
 		fillLocalPullDown(bars.getMenuManager());
 		fillToolBar(bars.getToolBarManager());
 	}
@@ -299,6 +302,8 @@ public class MavenExecutionView extends ViewPart {
 			public void run() {
 				contentIsPinned = !contentIsPinned;
 				setChecked(contentIsPinned);
+				if (!contentIsPinned)
+					fillView(getViewSite().getPage().getReference(getViewSite().getPage().getActiveEditor()));
 			}
 		};
 	}
