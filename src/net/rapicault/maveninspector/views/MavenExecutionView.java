@@ -13,6 +13,7 @@ package net.rapicault.maveninspector.views;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -61,10 +62,11 @@ public class MavenExecutionView extends ViewPart {
 	private StackLayout layout;
 	private Composite tablePage;
 	private Composite notMavenPage;
+	private Composite nestedMavenProjectPage;
 	private Composite contentPanel;
 
 	private boolean contentIsPinned;
-	
+
 	@Override
 	public void createPartControl(Composite shell) {
 		// create the composite that the pages will share
@@ -81,11 +83,17 @@ public class MavenExecutionView extends ViewPart {
 		makeActions();
 		contributeToActionBars();
 
-		// create the second page's content
+		// create a composite to show message when a project is not a maven project.
 		notMavenPage = new Composite(contentPanel, SWT.NONE);
 		notMavenPage.setLayout(new RowLayout());
 		Label text = new Label(notMavenPage, SWT.FULL_SELECTION);
 		text.setText("This pom does not belong to a maven project. To turn the project into a maven project: Right click on the project > Configure > Convert to Maven Project.");
+
+		// create a composite to show message when the pom is nested in a project
+		nestedMavenProjectPage = new Composite(contentPanel, SWT.NONE);
+		nestedMavenProjectPage.setLayout(new RowLayout());
+		Label nestedMavenProjectText = new Label(nestedMavenProjectPage, SWT.FULL_SELECTION);
+		nestedMavenProjectText.setText("This pom is nested inside a project. To make use of this view, import the project into the workspace using File > Import > Maven > Import Existing Maven Projects.");
 
 		// By default show the table
 		showTable();
@@ -107,7 +115,7 @@ public class MavenExecutionView extends ViewPart {
 				fillView(partRef);
 
 			}
-			
+
 			private void clearView(IWorkbenchPartReference partRef) {
 				if (contentIsPinned)
 					return;
@@ -152,19 +160,29 @@ public class MavenExecutionView extends ViewPart {
 	}
 
 	private void showTable() {
-		 layout.topControl = tablePage;
-		 pinContent.setEnabled(true);
-		 contentPanel.layout();
+		layout.topControl = tablePage;
+		pinContent.setEnabled(true);
+		contentPanel.layout();
 	}
 
 	private void showMessagePanel() {
-		 layout.topControl = notMavenPage;
-		 pinContent.setEnabled(false);
+		layout.topControl = notMavenPage;
+		pinContent.setEnabled(false);
+		contentPanel.layout();
+	}
+
+	private void showNestedProjectPanel() {
+		layout.topControl = nestedMavenProjectPage;
+		pinContent.setEnabled(false);
 		contentPanel.layout();
 	}
 
 	private void setViewerInput() {
-		final IProject newProject = ((IResource) getViewSite().getPage().getActiveEditor().getEditorInput().getAdapter(IResource.class)).getProject();
+		IFile file = (IFile) getViewSite().getPage().getActiveEditor().getEditorInput().getAdapter(IResource.class);
+		if (file.getFullPath().segmentCount() > 2)
+			showNestedProjectPanel();
+
+		final IProject newProject = file.getProject();
 		if (projectShown != null && projectShown.equals(newProject))
 			return;
 
@@ -209,7 +227,7 @@ public class MavenExecutionView extends ViewPart {
 			// System.err.println(new Throwable().getStackTrace()[1]);
 		}
 	}
-	
+
 	private void emptyViewer() {
 		projectShown = null;
 		MavenPlugin.getMavenProjectRegistry().removeMavenProjectChangedListener(mavenListener);
@@ -243,7 +261,7 @@ public class MavenExecutionView extends ViewPart {
 
 	private void contributeToActionBars() {
 		IActionBars bars = getViewSite().getActionBars();
-//		bars.setGlobalActionHandler(actionId, handler)
+		// bars.setGlobalActionHandler(actionId, handler)
 		fillLocalPullDown(bars.getMenuManager());
 		fillToolBar(bars.getToolBarManager());
 	}
@@ -286,18 +304,18 @@ public class MavenExecutionView extends ViewPart {
 		};
 		openSupportAction.setText("Contribution");
 		openSupportAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_HOME_NAV));
-		
+
 		pinContent = new Action("Pin", IAction.AS_CHECK_BOX) {
 			@Override
 			public String getToolTipText() {
 				return "Pin content of the view to current editor";
 			}
-			
+
 			@Override
 			public ImageDescriptor getImageDescriptor() {
 				return AbstractUIPlugin.imageDescriptorFromPlugin("net.rapicault.mavenInspector", "icons/pin_view.gif");
 			}
-			
+
 			@Override
 			public void run() {
 				contentIsPinned = !contentIsPinned;
