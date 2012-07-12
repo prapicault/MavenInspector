@@ -41,10 +41,7 @@ public class MojoContentProvider implements IStructuredContentProvider {
 		List<MojoExecution> mojos = null;
 		try {
 			mojos = ((MavenProjectFacade) project).getExecutionPlan("deploy", new NullProgressMonitor());
-			if (mojos != null)
-				return mojos.toArray(new MojoExecution[mojos.size()]);
-			else
-				return new Object[0];
+			return mojos.toArray(new MojoExecution[mojos.size()]);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}

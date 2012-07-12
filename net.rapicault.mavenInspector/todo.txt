@@ -1,0 +1,16 @@
+
+
+- show lifecycle 
+- allow to select the lifecycle
+	- clean
+	- deploy
+	- site
+
+
+http://marketplace.eclipse.org/node/add/training
+
+- error dans le fichier
+- after closing
+
+- first reopening after close all
+- copy

@@ -42,10 +42,6 @@ public class MojoLabelProvider extends BaseLabelProvider implements ITableLabelP
 		if (ColumnNames.PLUGIN.ordinal() == columnIndex) {
 			return mojoToPrint.getPlugin().getId();
 		}
-		
-		if (ColumnNames.EXECUTION_ID.ordinal() == columnIndex) {
-			return mojoToPrint.getExecutionId();
-		}
 		return "";
 	}
 }

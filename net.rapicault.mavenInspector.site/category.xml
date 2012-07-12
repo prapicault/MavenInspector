@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/net.rapicault.mavenInspector.feature_1.0.0.qualifier.jar" id="net.rapicault.mavenInspector.feature" version="1.0.0.qualifier">
+      <category name="net.rapicault.maveninspector.site"/>
+   </feature>
+   <category-def name="net.rapicault.maveninspector.site" label="Maven inspector"/>
+</site>
