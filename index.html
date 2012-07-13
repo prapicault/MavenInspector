@@ -22,9 +22,7 @@
 
 
         <ul>
-          <li><a href="https://github.com/prapicau/MavenInspector/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/prapicau/MavenInspector/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/prapicau/MavenInspector">View On <strong>GitHub</strong></a></li>
+          <li><a href="https://github.com/prapicau/MavenInspector">View code <strong>GitHub</strong></a></li>
         </ul>
       </header>
       <section>
@@ -32,9 +30,12 @@
 
 <p>As much as Maven makes it easy to deal with builds, the plethora of XML and the varying life cycles phases can sometimes make it hard to figure out what a build will actually do.</p>
 
-<p>To help with this, I've created the "Maven Inspector" plugin for Eclipse. This simple plugin provides an eclipse view called "Maven Execution" that presents for a given pom the phases and associated MOJOs.</p>
+<p>To help with this, I've created the "Maven Inspector" plugin for Eclipse. This simple plugin provides an eclipse view called "Maven Execution" that presents for a given pom the phases and associated MOJOs (see screenshot below)</p>
 
 <h2>How to install it?</h2>
+
+<p>To install this Eclipse plugin, go to Help > Install New Software... and enter <a href="http://prapicau.github.com/MavenInspector/repository">http://prapicau.github.com/MavenInspector/repository</a> in the "work with:" text box.<p>
+<p>Note that the Maven Inspector uses <a href="http://www.eclipse.org/m2eclipse">m2e</a> and it will automatically be installed if it is not already.</p>
 
 <h2>How to use it?</h2>
 
@@ -42,10 +43,16 @@
 
 <ul>
 <li>Open the Maven Execution view.</li>
-<li>Open a pom file.</li>
+<li>Open a POM file with the m2e editor.</li>
 </ul><p>The content of the view is refreshed when the pom file is saved.</p>
 
 <p>The "pin" option available from the view toolbar is useful when you are modifying a parent pom but want to keep focus on a "child" pom to see the effect of the changes.</p>
+
+<img src="images/view.png"/>
+
+<h2>License</h2>
+<p>The software is made available under the <a href="http://www.eclipse.org/legal/epl-v10.html">EPL</a>.</p>
+
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/prapicau">prapicau</a></p>
