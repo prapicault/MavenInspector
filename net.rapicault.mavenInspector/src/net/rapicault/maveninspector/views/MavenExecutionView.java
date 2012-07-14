@@ -297,9 +297,9 @@ public class MavenExecutionView extends ViewPart {
 		openSupportAction = new Action() {
 			public void run() {
 				try {
-					PlatformUI.getWorkbench().getBrowserSupport().createBrowser("Contribution").openURL(new URL("https://github.com/prapicau/MavenInspector"));
+					PlatformUI.getWorkbench().getBrowserSupport().createBrowser("Contribution").openURL(new URL("https://github.com/prapicault/MavenInspector"));
 				} catch (PartInitException e) {
-					MessageDialog.openError(viewer.getControl().getShell(), "Error opening page", "An error occurred trying to open the page: https://github.com/prapicau/MavenInspector");
+					MessageDialog.openError(viewer.getControl().getShell(), "Error opening page", "An error occurred trying to open the page: https://github.com/prapicault/MavenInspector");
 				} catch (MalformedURLException e) {
 					// Can't happen the URL is correct
 				}
