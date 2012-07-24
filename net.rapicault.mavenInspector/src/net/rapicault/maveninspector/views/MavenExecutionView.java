@@ -182,10 +182,15 @@ public class MavenExecutionView extends ViewPart {
 		if (activeEditor == null)
 			return;
 		IFile file = (IFile) activeEditor.getEditorInput().getAdapter(IResource.class);
+		if (file == null)
+			return;
 		if (file.getFullPath().segmentCount() > 2)
 			showNestedProjectPanel();
 
 		final IProject newProject = file.getProject();
+		if (newProject == null)
+			return;
+		
 		if (projectShown != null && projectShown.equals(newProject))
 			return;
 
